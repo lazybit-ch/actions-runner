@@ -93,3 +93,14 @@ helm upgrade --install actions-runner \
     --set dind.readinessProbe.enabled=false \
     lazybit/actions-runner \
     --wait
+
+# Basic installation
+# helm upgrade --install actions-runner \
+#     --set global.image.pullSecrets[0]=docker-0 \
+#     --set github.username=${GITHUB_USERNAME} \
+#     --set github.password=${GITHUB_TOKEN} \
+#     --set github.owner=${GITHUB_OWNER} \
+#     --set github.repository=${GITHUB_REPOSITORY} \
+#     --set dind.enabled=false \
+#     lazybit/actions-runner \
+#     --wait
