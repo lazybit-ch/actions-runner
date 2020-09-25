@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "actions-runner.fullname" . }}
+  labels:
+    {{- include "actions-runner.labels" . | nindent 4 }}
+{{- if .Values.extraLabels }}
+{{ toYaml .Values.extraLabels | indent 4 }}
+{{- end }}
+data:
+  owner: {{ .Values.github.owner }}
+  repository: {{ .Values.github.repository }}

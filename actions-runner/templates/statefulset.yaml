@@ -1,0 +1,214 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "actions-runner.fullname" . }}
+  labels:
+    {{- include "actions-runner.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "actions-runner.fullname" . }}
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "actions-runner.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "actions-runner.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "actions-runner.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "actions-runner.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      - name: init-actions-runner
+        image: "curlimages/curl:7.72.0"
+        command:
+          - sh
+          - -c
+          - |-
+            TOKEN=$(curl -X POST -H "Accept: application/vnd.github.v3+json" https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}/actions/runners/registration-token)
+            echo "${TOKEN}" > /init/token
+        env:
+          - name: GITHUB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.existingSecretName | default (include "actions-runner.fullname" .) }}
+                key: username
+          - name: GITHUB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.existingSecretName | default (include "actions-runner.fullname" .) }}
+                key: password
+          - name: GITHUB_OWNER
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "actions-runner.fullname" . }}
+                key: owner
+          - name: GITHUB_REPOSITORY
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "actions-runner.fullname" . }}
+                key: repository
+        volumeMounts:
+          - name: init-actions-runner
+            mountPath: /init
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- include "actions-runner.image" . | nindent 10 }}
+          {{- include "actions-runner.imagePullPolicy" . | nindent 10 }}
+          command:
+            - sh
+            - -c
+            - |-
+              TOKEN=$(cat /init/token |jq -r .token)
+              /opt/actions-runner/config.sh --url https://github.com/${GITHUB_OWNER}/${GITHUB_REPOSITORY} --token ${TOKEN} --name {{ include "actions-runner.fullname" . }} --replace --unattended
+              $(bash -x /opt/actions-runner/run.sh)
+          env:
+            - name: GITHUB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecretName | default (include "actions-runner.fullname" .) }}
+                  key: username
+            - name: GITHUB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecretName | default (include "actions-runner.fullname" .) }}
+                  key: password
+            - name: GITHUB_OWNER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "actions-runner.fullname" . }}
+                  key: owner
+            - name: GITHUB_REPOSITORY
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "actions-runner.fullname" . }}
+                  key: repository
+            - name: DOCKER_HOST
+              value: tcp://actions-runner-dind.default.svc.cluster.local:2376
+            - name: DOCKER_TLS_VERIFY
+              value: "1"
+            - name: DOCKER_CERT_PATH
+              value: /certs/client
+            - name: DOCKER_CLI_EXPERIMENTAL
+              value: enabled
+            {{- if .Values.buildkit }}
+            - name: DOCKER_BUILDKIT
+              value: "1"
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: init-actions-runner
+              mountPath: /init
+            - name: docker
+              mountPath: "/home/actions-runner/.docker/config.json"
+              subPath: config.json
+              readOnly: true
+            {{- if .Values.persistence.enabled }}
+            - name: certs
+              mountPath: /certs/client
+            - name: workspace
+              mountPath: /opt/actions-runner/_work
+            {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: init-actions-runner
+        emptyDir: {}
+      - name: docker
+        secret:
+          secretName: {{ .Values.docker }}
+  {{- if .Values.persistence.enabled  }}
+    {{- if .Values.persistence.certs.existingClaim }}
+      - name: certs
+        {{- with .Values.persistence.certs.existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ tpl . $ }}
+        {{- end }}
+    {{- else if not .Values.persistence.certs.existingClaim }}
+      - name: certs
+        emptyDir: {}
+    {{- end }}
+    {{- if .Values.persistence.workspace.existingClaim }}
+      - name: workspace
+        {{- with .Values.persistence.workspace.existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ tpl . $ }}
+        {{- end }}
+    {{- else if not .Values.persistence.workspace.existingClaim }}
+      - name: workspace
+        emptyDir: {}
+    {{- end }}
+  {{- end }}
+  {{- if and .Values.persistence.enabled (or (not .Values.persistence.certs.existingClaim) (not .Values.persistence.workspace.existingClaim)) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: certs
+      {{- with .Values.persistence.certs.annotations }}
+        annotations:
+        {{- range $key, $value := . }}
+          {{ $key }}: {{ $value }}
+        {{- end }}
+      {{- end }}
+      spec:
+        accessModes:
+        {{- range .Values.persistence.certs.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.certs.size | quote }}
+        {{ include "actions-runner.storageClass" . }}
+    - metadata:
+        name: workspace
+      {{- with .Values.persistence.workspace.annotations }}
+        annotations:
+        {{- range $key, $value := . }}
+          {{ $key }}: {{ $value }}
+        {{- end }}
+      {{- end }}
+      spec:
+        accessModes:
+        {{- range .Values.persistence.workspace.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.workspace.size | quote }}
+        {{ include "actions-runner.storageClass" . }}
+  {{- end }}
