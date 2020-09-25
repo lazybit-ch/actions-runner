@@ -102,7 +102,9 @@ livenessProbe:
 readinessProbe:
   enabled: false
 
-docker: ""
+docker: false
+dockerSecretName: ""
+
 buildkit: true
 dind:
   enabled: true

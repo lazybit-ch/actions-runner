@@ -125,10 +125,12 @@ spec:
           volumeMounts:
             - name: init-actions-runner
               mountPath: /init
+            {{- if .Values.docker }}
             - name: docker
               mountPath: "/home/actions-runner/.docker/config.json"
               subPath: config.json
               readOnly: true
+            {{- end }}
             {{- if .Values.persistence.enabled }}
             - name: certs
               mountPath: /certs/client
@@ -150,9 +152,11 @@ spec:
       volumes:
       - name: init-actions-runner
         emptyDir: {}
+      {{- if .Values.docker }}
       - name: docker
         secret:
-          secretName: {{ .Values.docker }}
+          secretName: {{ .Values.dockerSecretName }}
+      {{- end }}
   {{- if .Values.persistence.enabled  }}
     {{- if .Values.persistence.certs.existingClaim }}
       - name: certs
