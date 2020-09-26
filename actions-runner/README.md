@@ -6,6 +6,7 @@
 
 ```console
 $ helm repo add lazybit https://chartmuseum.lazybit.ch
+$ helm repo update
 $ helm install my-release lazybit/actions-runner --set global.image.pullSecrets[0]=docker-0
 ```
 
@@ -52,7 +53,7 @@ The following tables lists the configurable parameters of the GitHub Actions Run
 | `global.image.pullSecrets` | | `[]` |
 | `global.image.tag` | | `""` |
 | `replicaCount` | | `1` |
-| `image.repository` | | `ghcr.io/lazybit-ch/actions-runner` |
+| `image.repository` | | `lazybit/actions-runner` |
 | `image.pullPolicy` | | `IfNotPresent` |
 | `image.pullSecrets` | | `[]` |
 | `image.tag` | | `""` |

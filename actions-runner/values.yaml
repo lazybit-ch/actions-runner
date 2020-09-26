@@ -11,7 +11,7 @@ global:
 replicaCount: 1
 
 image:
-  repository: ghcr.io/lazybit-ch/actions-runner
+  repository: lazybit/actions-runner
   pullPolicy: IfNotPresent
   pullSecrets: []
   # Overrides the image tag whose default is the chart appVersion.
