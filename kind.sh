@@ -8,6 +8,8 @@ set -u
 : "${GITHUB_REPOSITORY:=example.com}"
 : "${DOCKER_USERNAME:=masseybradley}"
 : "${DOCKER_PASSWORD:?Missing Docker Registry credentials}"
+: "${CHARTMUSEUM_USERNAME:=masseybradley}"
+: "${CHARTMUSEUM_PASSWORD:?Missng ChartMuseum credentials}"
 
 # [ -n "$DOCKER_PASSWORD" ] || echo "Missing docker credentials" && exit 1
 # [ -n "$GITHUB_TOKEN" ] || echo "Missing github credentials" && exit 1
@@ -39,7 +41,9 @@ kubectl create secret docker-registry docker-0 \
 kubectl create secret generic docker --from-file=${HOME}/.docker/config.json
 
 # github.password requires a personal access token with `repo:read` privileges
-helm repo add lazybit https://chartmuseum.lazybit.ch
+helm repo add lazybit https://chartmuseum.lazybit.ch \
+    --username=${CHARTMUSEUM_USERNAME} \
+    --password=${CHARTMUSEUM_PASSWORD}
 helm repo update
 helm upgrade --install actions-runner \
     --set global.image.pullSecrets[0]=docker-0 \
