@@ -13,28 +13,7 @@ set -u
 # [ -n "$GITHUB_TOKEN" ] || echo "Missing github credentials" && exit 1
 
 # Create the Kubernetes in Docker cluster
-cat <<EOF | sudo kind create cluster --config=-
-apiVersion: kind.x-k8s.io/v1alpha4
-kind: Cluster
-nodes:
-- role: control-plane
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
-        authorization-mode: "AlwaysAllow"
-  extraPortMappings:
-  - containerPort: 80
-    hostPort: 80
-    protocol: TCP
-  - containerPort: 443
-    hostPort: 443
-    protocol: TCP
-- role: worker
-- role: worker
-EOF
+kind create cluster
 
 # Install the nfs-server-provisioner
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
