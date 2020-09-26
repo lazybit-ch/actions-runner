@@ -69,7 +69,8 @@ helm upgrade --install actions-runner \
     --set github.password=${GITHUB_TOKEN} \
     --set github.owner=${GITHUB_OWNER} \
     --set github.repository=${GITHUB_REPOSITORY} \
-    --set docker=docker \
+    --set docker=true \
+    --set dockerSecretName=docker \
     --set rbac.create=true \
     --set persistence.enabled=true \
     --set persistence.certs.existingClaim=certs-actions-runner-dind-0 \
