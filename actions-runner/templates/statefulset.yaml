@@ -93,7 +93,7 @@ spec:
                   name: {{ include "actions-runner.fullname" . }}
                   key: repository
             - name: DOCKER_HOST
-              value: tcp://actions-runner-dind.default.svc.cluster.local:2376
+              value: tcp://{{ include "actions-runner.fullname" . }}-dind:2376
             - name: DOCKER_TLS_VERIFY
               value: "1"
             - name: DOCKER_CERT_PATH
@@ -104,6 +104,14 @@ spec:
             - name: DOCKER_BUILDKIT
               value: "1"
             {{- end }}
+            - name: ACTIONS_RUNNER_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ACTIONS_RUNNER_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
