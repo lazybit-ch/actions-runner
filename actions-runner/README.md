@@ -7,10 +7,8 @@
 ```console
 $ helm repo add lazybit https://chartmuseum.lazybit.ch
 $ helm repo update
-$ helm install my-release lazybit/actions-runner --set global.image.pullSecrets[0]=docker-0
+$ helm install my-release lazybit/actions-runner
 ```
-
-> **Tip**: Create a docker registry Secret with your Github Container Registry credentials i.e. `kubectl create secret docker-registry docker-0 --docker-username=${GITHUB_USERNAME} --docker-password=${GITHUB_TOKEN} --docker-server=ghcr.io`
 
 ## Introduction
 
@@ -85,7 +83,8 @@ The following tables lists the configurable parameters of the GitHub Actions Run
 | `existingSecretName` | | `""` |
 | `livenessProbe.enabled` | | `false` |
 | `readinessProbe.enabled` | | `false` |
-| `docker` | Docker secret name for pushing images | `""` |
+| `docker` | Enable mounting Docker secret for pushing images | `false` |
+| `dockerSecretName` | Opaque Docker Secret name to mount (default `"docker"`) | `""` |
 | `dind.enabled` | Enable dependent Docker in Docker installation | `true` |
 
 ### Create secrets during the installation
@@ -109,7 +108,7 @@ helm install actions-runner \
     --set github.password=${GITHUB_TOKEN} \
     --set github.owner=lazybit-ch \
     --set github.repository=example.com \
-    --set docker=docker \
+    --set docker=true \
     --set rbac.create=false \
     --set persistence.enabled=true \
     --set persistence.certs.existingClaim=certs-actions-runner-dind-0 \
