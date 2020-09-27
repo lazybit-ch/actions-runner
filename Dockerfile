@@ -10,6 +10,8 @@ ENV DOCKER_COMPOSE_VERSION=${DOCKER_COMPOSE_VERSION:-"1.27.3"}
 ARG KUBECTL_VERSION
 ENV KUBECTL_VERSION=${KUBECTL_VERSION:-"1.19.0"}
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update && \
