@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  DOCKER_REGISTRY: ghcr.io
+  DOCKER_REGISTRY: lazybit.ch
 
 jobs:
   lint:
@@ -27,28 +27,7 @@ jobs:
 
       - run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${DOCKER_REGISTRY} -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.pkg.github.com -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - run: |
-            docker build --rm --build-arg UBUNTU_VERSION=20.04 -t ${DOCKER_REGISTRY}/lazybit-ch/actions-runner:latest .
-            docker tag ${DOCKER_REGISTRY}/lazybit-ch/actions-runner:latest docker.pkg.github.com/lazybit-ch/actions-runner/actions-runner:latest
-            docker push ${DOCKER_REGISTRY}/lazybit-ch/actions-runner:latest
-            docker push docker.pkg.github.com/lazybit-ch/actions-runner/actions-runner:latest
-
-  release:
-    name: release
-    needs: build
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@master
-
-      - name: create github release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
-        with:
-          tag_name: v${{ github.run_id }}.${{ github.run_number }}
-          release_name: Release ${{ github.ref }}
-          body: ""
-          draft: false
-          prerelease: false
+          docker build --rm --build-arg UBUNTU_VERSION=20.04 -t ${DOCKER_REGISTRY}/actions-runner:latest .
+          docker push ${DOCKER_REGISTRY}/dind:latest
