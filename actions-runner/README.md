@@ -102,7 +102,6 @@ Create an Opaque Secret with credentials for interacting with your Docker Regist
 ```console
 helm repo update
 helm install actions-runner \
-    --set global.image.pullSecrets[0]=docker-0 \
     --set global.storageClass=nfs-client \
     --set github.username=masseybradley \
     --set github.password=${GITHUB_TOKEN} \
