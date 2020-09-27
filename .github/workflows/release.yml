@@ -1,0 +1,93 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v[0-9].[0-9]+.[0-9]+'
+
+env:
+  DOCKER_REGISTRY: lazybit.ch
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: echo "::set-env name=VERSION::$(git describe --tags)"
+
+      - run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${DOCKER_REGISTRY} -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login docker.io -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GH_USERNAME }}" --password-stdin
+
+      - run: |
+          docker run --rm -i \
+              -v ${{ github.workspace }}:/workspace/source \
+              -v ${HOME}/.docker/config.json:/kaniko/.docker/config.json:ro \
+              --entrypoint /kaniko/executor \
+              gcr.io/kaniko-project/executor:v1.0.0 \
+                  --force \
+                  --dockerfile=/workspace/source/Dockerfile \
+                  --build-arg=UBUNTU_VERSION=20.04 \
+                  --destination=${DOCKER_REGISTRY}/actions-runner:${VERSION} \
+                  --context=/workspace/source \
+                  --cache-repo=${DOCKER_REGISTRY}/actions-runner/cache \
+                  --cache=true
+
+      - run: |
+          docker run --rm -i \
+              -v ${HOME}/.docker/config.json:/root/.docker/config.json:ro \
+              lazybit/skopeo copy docker://${DOCKER_REGISTRY}/actions-runner:${VERSION} docker://docker.io/lazybit/actions-runner:${VERSION}
+          docker run --rm -i \
+              -v ${HOME}/.docker/config.json:/root/.docker/config.json:ro \
+              lazybit/skopeo copy docker://${DOCKER_REGISTRY}/actions-runner:${VERSION} docker://ghcr.io/lazybit-ch/actions-runner:${VERSION}
+
+  helm:
+    name: helm
+    needs: build
+    runs-on: ubuntu-18.04
+    container:
+      image: lazybit/helm
+    defaults:
+      run:
+        working-directory: actions-runner
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: echo "::set-env name=VERSION::$(git describe --tags | sed -e 's/v//g')"
+
+      - run: |
+          helm repo add \
+              --username=${{ secrets.CHARTMUSEUM_USERNAME }} \
+              --password=${{ secrets.CHARTMUSEUM_PASSWORD }} \
+              lazybit https://chartmuseum.lazybit.ch
+          helm dependency update
+          helm package --version=${VERSION} --app-version=v${VERSION} .
+          helm push actions-runner-${VERSION}.tgz lazybit
+
+  release:
+    name: release
+    needs: helm
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@master
+
+      - run: echo "::set-env name=VERSION::$(git describe --tags)"
+
+      - run: |
+          docker run --rm -i -u root \
+              -v ${{ github.workspace }}:/workspace/source \
+              -w /workspace/source \
+              lazybit/conventional-changelog-cli -i CHANGELOG.md -s -t ${VERSION}
+
+      - uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body_path: "${{ github.workspace }}/CHANGELOG.md"
+          draft: false
+          prerelease: false

@@ -30,4 +30,4 @@ jobs:
 
       - run: |
           docker build --rm --build-arg UBUNTU_VERSION=20.04 -t ${DOCKER_REGISTRY}/actions-runner:latest .
-          docker push ${DOCKER_REGISTRY}/dind:latest
+          docker push ${DOCKER_REGISTRY}/actions-runner:latest
