@@ -163,7 +163,7 @@ spec:
       {{- if .Values.docker }}
       - name: docker
         secret:
-          secretName: {{ .Values.dockerSecretName }}
+          secretName: {{ .Values.dockerSecretName | default "docker" }}
       {{- end }}
   {{- if .Values.persistence.enabled  }}
     {{- if .Values.persistence.certs.existingClaim }}
