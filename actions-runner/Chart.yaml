@@ -4,7 +4,7 @@ dependencies:
 - condition: dind.enabled
   name: dind
   repository: https://chartmuseum.lazybit.ch
-  version: 0.1.0
+  version: 0.1.1
 description: A Helm chart for Kubernetes
 name: actions-runner
 type: application
