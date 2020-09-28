@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: v0.1.0
+dependencies:
+- condition: dind.enabled
+  name: dind
+  repository: https://chartmuseum.lazybit.ch
+  version: 0.1.0
+description: A Helm chart for Kubernetes
+name: actions-runner
+type: application
+version: 0.1.0
