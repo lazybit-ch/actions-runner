@@ -49,43 +49,40 @@ The following tables lists the configurable parameters of the GitHub Actions Run
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `global.image.pullPolicy` | | `""` |
-| `global.image.pullSecrets` | | `[]` |
-| `global.image.tag` | | `""` |
-| `replicaCount` | | `1` |
-| `image.repository` | | `lazybit/actions-runner` |
-| `image.pullPolicy` | | `IfNotPresent` |
-| `image.pullSecrets` | | `[]` |
-| `image.tag` | | `""` |
-| `nameOverride` | | `""` |
-| `fullnameOverride` | | `""` |
-| `serviceAccount.create` | | `true` |
-| `serviceAccount.annotations` | | `{}` |
-| `serviceAccount.name` | | |
-| `podAnnotations` | | `{}` |
-| `podSecurityContext` | | `{}` |
-| `securityContext` | | `{}` |
-| `service.type` | | `ClusterIP` |
-| `service.port` | | `8080` |
-| `ingress.enabled` | | `false` |
-| `ingress.annotations` | | `{}` |
-| `ingress.hosts[0].host` | | `chart-example.local` |
-| `ingress.hosts[0].paths` | | `[]` |
-| `ingress.tls` | | `[]` |
-| `resources` | | `{}` |
-| `autoscaling.enabled` | | `false` |
-| `autoscaling.minReplicas` | | `1` |
-| `autoscaling.maxReplicas` | | `100` |
-| `autoscaling.targetCPUUtilizationPercentage` | | `80` |
-| `nodeSelector` | | `{}` |
-| `tolerations` | | `[]` |
-| `affinity` | | `{}` |
-| `github` | | `{}` |
-| `existingSecret` | | `false` |
-| `existingSecretName` | | `""` |
-| `livenessProbe.enabled` | | `false` |
-| `readinessProbe.enabled` | | `false` |
-| `docker` | Docker secret name for pushing images | `""` |
+| `global.image.pullPolicy` | Global docker image pull policy | `""` |
+| `global.image.pullSecrets` | Global docker image pull secrets | `[]` |
+| `global.image.tag` | Global docker image tag | `""` |
+| `replicaCount` | Number of replicas | `1` |
+| `image.repository` | Github Actions Runner image registry | `lazybit/actions-runner` |
+| `image.pullPolicy` | Docker image pull policy | `IfNotPresent` |
+| `image.pullSecrets` | Docker image pull secrets | `[]` |
+| `image.tag` | Docker image tag | `""` |
+| `nameOverride` | String to partially override actions-runner.fullname template with a string (will prepend the release name) | `""` |
+| `fullnameOverride` | String to fully override actions-runner.fullname template with a string | `""` |
+| `serviceAccount.create` | Create service account | `true` |
+| `serviceAccount.annotations` | Annotations for service account | `{}` |
+| `serviceAccount.name` | Name of the service account to use | `""` |
+| `podAnnotations` | Map of annotations to add to the pod | `{}` |
+| `podSecurityContext.runAsUser` | User ID for the container | `1000` |
+| `podSecurityContext.runAsGroup` | Group ID for the container | `1000` |
+| `podSecurityContext.fsGroup` | File system group ID for the container | `1000` |
+| `securityContext` | Map of privileges and access control settings for a Pod | `{}` |
+| `resources` | Map of allocated resources | `{}` |
+| `autoscaling.enabled` | Enable horizontal pod autoscaling | `false` |
+| `autoscaling.minReplicas` | Minimum autoscaling replicas | `1` |
+| `autoscaling.maxReplicas` | Maximum autoscaling replicas | `100` |
+| `autoscaling.targetCPUUtilizationPercentage` | Autoscaling CPU utilization threshold | `80` |
+| `nodeSelector` | Map of node labels for pod assignment | `{}` |
+| `tolerations` | Toleration labels for pod assignment | `[]` |
+| `affinity` | Map of affinity labels for pod assignment | `{}` |
+| `github.username` | Github username | `""` |
+| `github.password` | Github password | `""` |
+| `github.organization` | Github organization | `""` |
+| `github.repository` | Github repository | `""` |
+| `existingSecret` | Existing secret with Github credentials | `false` |
+| `existingSecretName` | Existing secret with Github credentials name | `""` |
+| `docker` | Mount docker config.json from secret | `false` |
+| `dockerSecretName` | Docker secret name to mount (default: `docker` if `docker=true`) | `""` |
 | `dind.enabled` | Enable dependent Docker in Docker installation | `true` |
 
 ### Create secrets during the installation
@@ -109,7 +106,7 @@ helm install actions-runner \
     --set github.password=${GITHUB_TOKEN} \
     --set github.owner=lazybit-ch \
     --set github.repository=example.com \
-    --set docker=docker \
+    --set docker=true \
     --set rbac.create=false \
     --set persistence.enabled=true \
     --set persistence.certs.existingClaim=certs-actions-runner-dind-0 \
