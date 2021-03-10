@@ -22,7 +22,7 @@ docker run --rm -i \
     -w /workspace/source \
     lazybit/pre-commit run --all-files
 
-ocker run --rm -i \
+docker run --rm -i \
     -v ${PWD}:/workspace/source \
     -w /workspace/source \
     hadolint/hadolint < Dockerfile
