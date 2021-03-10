@@ -16,14 +16,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        apt-transport-https=2.0.2ubuntu0.1 \
-        ca-certificates=20190110ubuntu1.1 \
-        curl=7.68.0-1ubuntu2.2 \
-        git=1:2.25.1-1ubuntu3 \
+        apt-transport-https=2.0.2ubuntu0.2 \
+        ca-certificates=20210119~20.04.1 \
+        curl=7.68.0-1ubuntu2.4 \
+        git=1:2.25.1-1ubuntu3.1 \
         gnupg-agent=2.2.19-3ubuntu2 \
         iputils-ping=3:20190709-3 \
-        jq=1.6-1 \
-        software-properties-common=0.98.9.2 && \
+        jq=1.6-1ubuntu0.20.04.1 \
+        software-properties-common=0.98.9.4 && \
     apt-get clean && \
     rm -rf /var/cache/apt/lists/*
 
