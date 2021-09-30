@@ -18,7 +18,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         apt-transport-https=2.0.2ubuntu0.2 \
         ca-certificates=20210119~20.04.2 \
-        curl=7.68.0-1ubuntu2.4 \
+        curl=7.68.0-1ubuntu2.7 \
         git=1:2.25.1-1ubuntu3.1 \
         gnupg-agent=2.2.19-3ubuntu2 \
         iputils-ping=3:20190709-3 \
