@@ -27,6 +27,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/cache/apt/lists/*
 
+# hadolint ignore=DL3059
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
     apt-get update && \
@@ -37,9 +38,11 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
     apt-get clean && \
     rm -rf /var/cache/apt/lists/*
 
+# hadolint ignore=DL3059
 RUN curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl && \
     chmod 755 /usr/local/bin/kubectl
 
+# hadolint ignore=DL3059
 RUN curl -Lo /usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" && \
     chmod 755 /usr/local/bin/docker-compose
 
@@ -47,6 +50,7 @@ WORKDIR /opt/actions-runner
 RUN curl -L "https://github.com/actions/runner/releases/download/v${GITHUB_ACTIONS_RUNNER_VERSION}/actions-runner-linux-x64-${GITHUB_ACTIONS_RUNNER_VERSION}.tar.gz" | tar xvz && \
     bash -x /opt/actions-runner/bin/installdependencies.sh
 
+# hadolint ignore=DL3059
 RUN groupadd -g 1000 actions-runner && \
     useradd -d /home/actions-runner -m -s /usr/bin/bash -k /etc/skel -u 1000 -g 1000 -G docker actions-runner && \
     chown -R 1000:1000 /opt/actions-runner
