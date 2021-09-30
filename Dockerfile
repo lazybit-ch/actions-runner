@@ -23,7 +23,7 @@ RUN apt-get update && \
         gnupg-agent=2.2.19-3ubuntu2 \
         iputils-ping=3:20190709-3 \
         jq=1.6-1ubuntu0.20.04.1 \
-        software-properties-common=0.98.9.4 && \
+        software-properties-common=0.98.9.5 && \
     apt-get clean && \
     rm -rf /var/cache/apt/lists/*
 
