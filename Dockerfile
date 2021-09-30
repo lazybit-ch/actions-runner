@@ -31,7 +31,7 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        docker-ce=5:20.10.5~3-0~ubuntu-focal \
+        docker-ce=5:20.10.8~3-0~ubuntu-focal \
         docker-ce-cli=5:20.10.5~3-0~ubuntu-focal \
         containerd.io=1.4.4-1 && \
     apt-get clean && \
