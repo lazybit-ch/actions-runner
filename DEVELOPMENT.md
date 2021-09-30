@@ -11,6 +11,13 @@ We use [`docker`](https://www.docker.com/) for running
 [`kind`](https://kind.sigs.k8s.io/)>=[`v0.9.0`](https://github.com/kubernetes-sigs/kind/releases)
 for bootstrapping local Kubernetes clusters.
 
+## build
+
+Build the `actions-runner` image locally:
+```
+
+```
+
 ### pre-commit
 
 Add a [`pre-commit`](https://git-scm.com/docs/githooks#_pre_commit) hook in your local checkout
